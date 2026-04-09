@@ -3,9 +3,30 @@
 A complete video processing system with real-time AI object detection.
 
 ## Structure
-- `/client`: React + TypeScript + Tailwind frontend.
+- `/client`: Angular 19 + TypeScript + Tailwind frontend.
 - `/server`: Node.js + Express + Socket.IO + Mongoose backend.
 - `/ml-server`: Flask + YOLOv8 object detection server.
+
+## API Documentation
+
+### Backend Server (Port 5000)
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/ping` | `GET` | Health check endpoint. |
+| `/api/upload` | `POST` | Upload a video file to start processing. Expects `multipart/form-data` with a `video` field. |
+| `/api/status/:uploadId` | `GET` | Get current processing status of a video. |
+| `/api/results/:uploadId` | `GET` | Get final detection results for a specific upload. |
+| `/api/history` | `GET` | Returns list of all processed/recent videos. |
+| `/api/video/:uploadId` | `GET` | Returns full document for a specific video. |
+| `/ml-outputs/:filename`| `GET` | Static proxy for annotated output videos. |
+
+### ML Server (Port 5001)
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/detect` | `POST` | YOLO detection on a single image (legacy). |
+| `/detect-video` | `POST` | Full video detection. Streams progress and results as `application/x-ndjson`. |
 
 ## Prerequisites
 1. **Python 3.8+**
@@ -37,10 +58,10 @@ npm run dev
 ```
 
 ## Features
-- Video upload (MP4/MOV up to 100MB).
-- Frame extraction at 1 FPS using FFmpeg.
-- Synchronous communication with ML server.
-- Real-time status and progress updates via Socket.IO.
-- Persistent storage of results in MongoDB.
-- Premium UI for visualization.
+- Full Video analysis at native frame rates.
+- H.264 smooth video output with annotated bounding boxes.
+- Real-time progress tracking via Socket.IO.
+- Interactive timeline to jump to specific object detections.
+- Premium dark-themed UI (Glassmorphism).
+
 # novasoftware_project
