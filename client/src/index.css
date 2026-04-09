@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  background-color: #020617; /* slate-950 */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }

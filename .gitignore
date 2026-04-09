@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+uploads/
+outputs/
+temp_frames/
+*.pt
+__pycache__/
+*.mp4
+*.mov
+# Environments
+env/
+ml-server/env/
+ml-server/outputs/
+# Temporary/Scratch
+scratch/
+.temp/
