@@ -15,6 +15,14 @@ CORS(app)
 # Load YOLO model at startup
 model = YOLO("yolov8n.pt")
 
+def get_ffmpeg_path():
+    """Returns the path to the local ffmpeg binary if it exists, otherwise 'ffmpeg'"""
+    local_path = os.path.join(os.path.dirname(__file__), 'bin', 'ffmpeg.exe')
+    if os.path.exists(local_path):
+        print(f"Using local ffmpeg: {local_path}")
+        return local_path
+    return 'ffmpeg'
+
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -88,7 +96,7 @@ def detect_video():
         
         # Use ffmpeg pipe for browser-compatible H.264 output at native fps
         ffmpeg_cmd = [
-            'ffmpeg', '-y',
+            get_ffmpeg_path(), '-y',
             '-f', 'rawvideo',
             '-vcodec', 'rawvideo',
             '-s', f'{width}x{height}',
