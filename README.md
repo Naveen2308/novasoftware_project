@@ -2,6 +2,9 @@
 
 A complete video processing system with real-time AI object detection.
 
+## Demo Video
+![Project Demo](resources/video.mp4)
+
 ## Structure
 - `/client`: Angular 19 + TypeScript + Tailwind frontend.
 - `/server`: Node.js + Express + Socket.IO + Mongoose backend.
