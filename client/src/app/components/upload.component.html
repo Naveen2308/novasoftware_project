@@ -1,0 +1,42 @@
+<div class="max-w-2xl mx-auto p-12 bg-slate-900/50 rounded-3xl border border-slate-800 text-center space-y-8 mt-10">
+  <div
+    class="relative border-2 border-dashed rounded-2xl p-16 transition-all group flex flex-col items-center justify-center"
+    [ngClass]="status() === 'uploading' ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-slate-700 hover:border-indigo-500 cursor-pointer'"
+    (dragover)="$event.preventDefault()"
+    (drop)="handleDrop($event)"
+  >
+    <input
+      type="file"
+      accept="video/mp4,video/quicktime,.mp4,.mov"
+      class="absolute inset-0 opacity-0 cursor-pointer"
+      [disabled]="status() === 'uploading'"
+      (change)="onFileSelected($event)"
+    />
+
+    <ng-container *ngIf="status() === 'idle'">
+      <svg lucideIcon="upload" class="w-16 h-16 mx-auto mb-4 text-slate-500 group-hover:text-indigo-400 transition-colors"></svg>
+      <p class="text-slate-400 font-medium text-lg">
+        {{ file() ? file()!.name : 'Drag & drop your video here' }}
+      </p>
+      <p class="text-slate-500 text-sm mt-2">or click to browse (MP4/MOV, max 100MB)</p>
+    </ng-container>
+
+    <div *ngIf="status() === 'uploading'" class="w-full max-w-sm text-center">
+      <svg lucideIcon="loader-2" class="w-12 h-12 mx-auto mb-4 text-indigo-400 animate-spin"></svg>
+      <p class="text-indigo-300 font-bold mb-4 animate-pulse">Uploading... {{ uploadProgress() }}%</p>
+      <div class="w-full bg-slate-800 rounded-full h-2">
+        <div class="bg-indigo-500 h-2 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]" [style.width.%]="uploadProgress()"></div>
+      </div>
+    </div>
+  </div>
+
+  <button
+    (click)="handleUpload()"
+    [disabled]="!file() || status() !== 'idle'"
+    class="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 rounded-2xl font-black transition-all text-sm uppercase tracking-widest shadow-2xl shadow-indigo-900/40 flex items-center justify-center gap-3 overflow-hidden group relative text-white"
+  >
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+    <svg lucideIcon="play" class="w-5 h-5"></svg>
+    Analyze Video
+  </button>
+</div>

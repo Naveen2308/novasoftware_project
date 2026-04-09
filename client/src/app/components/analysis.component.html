@@ -1,0 +1,245 @@
+<div class="space-y-8">
+  <!-- Main Workspace -->
+  <div class="grid grid-cols-1 gap-8">
+    <!-- Header -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between px-2">
+        <div class="flex items-center gap-4">
+          <a routerLink="/" class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+            <svg lucideIcon="arrow-left" class="w-4 h-4 text-slate-400"></svg>
+          </a>
+          <div class="flex flex-col">
+            <h2 class="text-xl font-black text-white">{{ selectedVideo()?.originalName || selectedVideo()?.filename || 'Loading...' }}</h2>
+            @if (status() === 'completed' && selectedVideo()?.outputVideo) {
+              <a
+                [href]="apiBase + selectedVideo()?.outputVideo"
+                download
+                class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 mt-1 transition-colors"
+              >
+                <svg lucideIcon="check-circle" class="w-3 h-3"></svg> Download Processed MP4 (with boxes)
+              </a>
+            }
+          </div>
+        </div>
+        @if (status() === 'completed') {
+          <span class="text-xs text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/20">Analysis Ready</span>
+        }
+      </div>
+
+      <!-- Video Tab Switcher -->
+      @if (status() === 'completed' && selectedVideo()?.outputVideo) {
+        <div class="flex items-center gap-1 px-2">
+          <button
+            (click)="handleTabSwitch('original')"
+            class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2"
+            [ngClass]="videoTab() === 'original' ? 'bg-slate-700 text-white shadow-lg border border-slate-600' : 'bg-slate-900/50 text-slate-500 border border-slate-800 hover:text-slate-300 hover:border-slate-600'"
+          >
+            <svg lucideIcon="video" class="w-3.5 h-3.5"></svg>
+            Original Video
+          </button>
+          <button
+            (click)="handleTabSwitch('detected')"
+            class="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2"
+            [ngClass]="videoTab() === 'detected' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40 border border-indigo-500' : 'bg-slate-900/50 text-slate-500 border border-slate-800 hover:text-slate-300 hover:border-slate-600'"
+          >
+            <svg lucideIcon="search" class="w-3.5 h-3.5"></svg>
+            Detection View
+            <span class="px-1.5 py-0.5 bg-white/20 rounded text-[9px]">AI</span>
+          </button>
+        </div>
+      }
+
+      <!-- Video Player -->
+      <div class="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden aspect-video relative flex items-center justify-center group/player">
+        <!-- Error State -->
+        @if (error()) {
+          <div class="text-center p-8 space-y-4">
+            <svg lucideIcon="activity" class="w-12 h-12 mx-auto text-rose-500"></svg>
+            <p class="text-rose-400 font-bold">{{ error() }}</p>
+            <div class="flex items-center justify-center gap-3">
+              <button (click)="id() && fetchVideoData(id()!)" class="px-4 py-2 bg-slate-800 rounded-lg text-xs hover:bg-slate-700 transition-colors">Retry Connection</button>
+              <a routerLink="/" class="px-4 py-2 bg-indigo-600 rounded-lg text-xs hover:bg-indigo-500 transition-colors font-bold">Go Home</a>
+            </div>
+          </div>
+        } @else if (selectedVideo()) {
+          <div class="relative w-full h-full flex items-center justify-center">
+            <!-- Original Video -->
+            @if (videoTab() === 'original' || (status() !== 'completed' || !selectedVideo()?.outputVideo)) {
+              <video
+                #origVid
+                [src]="apiBase + '/uploads/' + selectedVideo()!.filename"
+                controls
+                preload="auto"
+                (timeupdate)="onTimeUpdate($event)"
+                class="w-full h-full object-contain"
+              ></video>
+            }
+
+            <!-- Detected Video -->
+            @if (videoTab() === 'detected' && status() === 'completed' && selectedVideo()?.outputVideo) {
+              <video
+                #detectedVideoRef
+                [src]="apiBase + selectedVideo()!.outputVideo"
+                controls
+                preload="auto"
+                (timeupdate)="onTimeUpdate($event)"
+                class="w-full h-full object-contain"
+              ></video>
+            }
+
+            <!-- Live Bounding Box Overlay (Original Tab) -->
+            @if (videoTab() === 'original' && status() === 'completed' && currentDetections.length > 0) {
+              <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                @if (videoRef) {
+                  <div class="relative" [style.width.px]="videoRef.nativeElement.clientWidth" [style.height.px]="videoRef.nativeElement.clientHeight">
+                    @for (det of currentDetections; track $index) {
+                      <div
+                        class="absolute border-2 border-indigo-500 bg-indigo-500/20 rounded shadow-[0_0_10px_rgba(99,102,241,0.5)] flex flex-col justify-start"
+                        [style.left.px]="det.bbox[0] * (videoRef.nativeElement.clientWidth / (selectedVideo()?.videoWidth || 1))"
+                        [style.top.px]="det.bbox[1] * (videoRef.nativeElement.clientHeight / (selectedVideo()?.videoHeight || 1))"
+                        [style.width.px]="(det.bbox[2] - det.bbox[0]) * (videoRef.nativeElement.clientWidth / (selectedVideo()?.videoWidth || 1))"
+                        [style.height.px]="(det.bbox[3] - det.bbox[1]) * (videoRef.nativeElement.clientHeight / (selectedVideo()?.videoHeight || 1))"
+                      >
+                        <span class="bg-indigo-500 text-white text-[8px] font-bold px-1 py-0.5 rounded-br w-fit whitespace-nowrap">
+                          {{ det.label }} {{ (det.confidence * 100) | number:'1.0-0' }}%
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Tab Indicator Overlay -->
+            @if (status() === 'completed' && selectedVideo()?.outputVideo) {
+              <div class="absolute top-4 right-4 z-10">
+                <div class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md border"
+                  [ngClass]="videoTab() === 'detected' ? 'bg-indigo-600/80 border-indigo-400/50 text-white' : 'bg-slate-900/80 border-slate-700 text-slate-300'">
+                  {{ videoTab() === 'detected' ? '🔍 Detection View' : '🎬 Original' }}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center p-8">
+            <svg lucideIcon="loader-2" class="w-12 h-12 mx-auto mb-4 text-slate-700 animate-spin"></svg>
+            <p class="text-slate-500 text-sm">Loading video data...</p>
+          </div>
+        }
+
+        <!-- Processing Overlay -->
+        @if (selectedVideo() && status() !== 'completed' && status() !== 'loading' && status() !== 'failed') {
+          <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
+            <div class="text-center space-y-4 max-w-md w-full px-6">
+              <div class="relative">
+                <svg lucideIcon="loader-2" class="w-16 h-16 mx-auto text-indigo-500 animate-spin"></svg>
+                <svg lucideIcon="activity" class="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white animate-pulse"></svg>
+              </div>
+              <div>
+                <p class="text-indigo-400 font-black uppercase tracking-tighter text-2xl animate-pulse">{{ status() }}...</p>
+                <p class="text-slate-400 text-sm font-medium">Stage: {{ status() === 'extracting' ? 'Extracting Frames' : status() === 'detecting' ? 'Object Detection pipeline active' : 'Processing' }}</p>
+              </div>
+
+              @if (processingProgress()) {
+                <div class="space-y-2">
+                  <div class="flex justify-between text-[10px] font-bold text-slate-500">
+                    <span>PROGRESS</span>
+                    <span>{{ (processingProgress()!.current / processingProgress()!.total) * 100 | number:'1.0-0' }}%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                      [style.width.%]="(processingProgress()!.current / processingProgress()!.total) * 100"
+                    ></div>
+                  </div>
+                  <p class="text-[10px] text-slate-500">Frame {{ processingProgress()!.current }} of {{ processingProgress()!.total }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Failed Overlay -->
+        @if (selectedVideo() && status() === 'failed') {
+          <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-20">
+            <div class="text-center space-y-4">
+              <svg lucideIcon="activity" class="w-16 h-16 mx-auto text-rose-500"></svg>
+              <p class="text-rose-400 font-black text-xl">Processing Failed</p>
+              <p class="text-slate-400 text-sm">Something went wrong during video analysis.</p>
+              <a routerLink="/" class="inline-block px-6 py-3 bg-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-500 transition-colors">
+                Upload Another Video
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Timestamps Section -->
+  @if (status() === 'completed' && selectedVideo()?.results) {
+    <div class="bg-slate-900/30 p-8 rounded-3xl border border-slate-800 space-y-8">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
+            <svg lucideIcon="timer" class="w-6 h-6 text-indigo-400"></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold tracking-tight text-white">Object Timeline</h2>
+            <p class="text-slate-500 text-sm font-medium">Click on any marker to jump to that moment in the video</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="px-4 py-2 bg-emerald-500/10 text-emerald-400 text-sm font-bold rounded-xl border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+            {{ selectedVideo()!.results!.length }} Detections
+          </div>
+          <button
+            (click)="exportJson()"
+            class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-black uppercase tracking-widest rounded-xl border border-slate-700 transition-all active:scale-95 flex items-center gap-2"
+          >
+            <svg lucideIcon="upload" class="w-3.5 h-3.5 rotate-180"></svg>
+            Export JSON
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @if (selectedVideo()!.results!.length > 0) {
+          @for (item of selectedVideo()!.results; track item) {
+            @if (item.detections.length > 0) {
+              <div class="space-y-3">
+                <div class="flex items-center gap-2 text-[10px] font-black text-slate-500 tracking-tighter uppercase px-1">
+                  <svg lucideIcon="clock" class="w-3 h-3"></svg> Timestamp: {{ item.timestamp }}s
+                </div>
+                <div class="space-y-2">
+                  @for (det of item.detections; track det) {
+                    <button
+                      (click)="seekTo(item.timestamp)"
+                      class="w-full p-4 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 rounded-2xl text-left transition-all group relative overflow-hidden active:scale-[0.98]"
+                    >
+                      <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 -mr-8 -mt-8 rounded-full transition-all group-hover:bg-indigo-500/10"></div>
+                      <div class="flex items-center justify-between relative z-10 mb-2">
+                        <span class="text-xs font-black text-indigo-400 uppercase tracking-widest">{{ det.label }}</span>
+                        <div class="px-2 py-0.5 bg-slate-800 rounded-md text-[9px] font-bold text-slate-500 group-hover:text-indigo-300 transition-colors">
+                          {{ (det.confidence * 100) | number:'1.1-1' }}%
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between relative z-10">
+                        <span class="text-[10px] text-slate-500 font-medium">Click to visualize moment</span>
+                        <svg lucideIcon="play" class="w-3 h-3 text-indigo-500 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"></svg>
+                      </div>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
+        } @else {
+          <div class="col-span-full py-12 text-center bg-slate-900/20 rounded-3xl border border-dashed border-slate-800">
+            <p class="text-slate-500 italic font-medium">No objects detected during the analysis scan.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "./app/**/*.{html,ts}";
 
 :root {
   background-color: #020617; /* slate-950 */
@@ -9,11 +10,7 @@ body {
   padding: 0;
   width: 100%;
   min-height: 100vh;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
+  color: #f8fafc; /* slate-50 */
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }

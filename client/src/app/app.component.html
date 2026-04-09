@@ -1,0 +1,26 @@
+<div class="flex h-screen bg-slate-950 text-slate-50 font-sans overflow-hidden">
+  <!-- Sidebar: History -->
+  <app-sidebar [history]="history()" [activeId]="activeId()"></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-y-auto bg-slate-950 relative">
+    <header class="sticky top-0 z-10 p-6 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-indigo-600 rounded-lg">
+          <svg lucideIcon="video" class="w-5 h-5 text-white"></svg>
+        </div>
+        <a routerLink="/" class="text-xl font-bold tracking-tight text-white">ObjectEye <span class="text-slate-500 font-normal">v2.0</span></a>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800">
+          <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          DeepMind Engine Online
+        </div>
+      </div>
+    </header>
+
+    <div class="p-8 space-y-8 max-w-full mx-auto w-full">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
