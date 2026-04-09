@@ -1,9 +1,9 @@
-# ObjectEye Monorepo
+# ObjectEye
 
 A complete video processing system with real-time AI object detection.
 
 ## Demo Video
-<video src="resources/video.mp4" controls width="100%"></video>
+![](resources/video.mp4)
 
 ## Structure
 - `/client`: Angular 19 + TypeScript + Tailwind frontend.
