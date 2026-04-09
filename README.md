@@ -3,7 +3,7 @@
 A complete video processing system with real-time AI object detection.
 
 ## Demo Video
-![Project Demo](resources/video.mp4)
+<video src="resources/video.mp4" controls width="100%"></video>
 
 ## Structure
 - `/client`: Angular 19 + TypeScript + Tailwind frontend.

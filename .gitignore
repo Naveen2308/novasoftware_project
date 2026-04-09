@@ -18,3 +18,4 @@ scratch/
 
 # Bundled Binaries
 !ml-server/bin/ffmpeg.exe
+!resources/video.mp4
