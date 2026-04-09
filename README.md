@@ -3,9 +3,11 @@
 A complete video processing system with real-time AI object detection.
 
 ## Demo Video
-![](resources/video.mp4)
+https://github.com/user-attachments/assets/4930f060-97df-4c6c-ada1-282427920f13
+
 
 ## Structure
+
 - `/client`: Angular 19 + TypeScript + Tailwind frontend.
 - `/server`: Node.js + Express + Socket.IO + Mongoose backend.
 - `/ml-server`: Flask + YOLOv8 object detection server.
