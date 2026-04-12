@@ -59,7 +59,7 @@ node index.js
 ```bash
 cd client
 npm install
-npm run dev
+ng serve
 ```
 
 ## Features
